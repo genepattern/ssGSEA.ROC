@@ -1,7 +1,8 @@
-suppressMessages(suppressWarnings(install.packages("BiocManager", 
- repos = "https://cloud.r-project.org/", quiet = TRUE)))
+suppressMessages(suppressWarnings(install.packages("BiocManager", repos = "https://cloud.r-project.org/", 
+ quiet = TRUE)))
 
-suppressMessages(suppressWarnings(BiocManager::install("cBioPortalData", ask = FALSE, quiet = TRUE)))
+suppressMessages(suppressWarnings(BiocManager::install("cBioPortalData", ask = FALSE, 
+ quiet = TRUE)))
 suppressMessages(suppressWarnings(BiocManager::install("AnVIL", ask = FALSE, quiet = TRUE)))
 suppressMessages(suppressWarnings(library("cBioPortalData")))
 suppressMessages(suppressWarnings(library("AnVIL")))
@@ -30,16 +31,19 @@ if (as.numeric(msigdbversion) >= 7.2) {
  symbolchip <- read.table(url(paste0("https://data.broadinstitute.org/gsea-msigdb/msigdb/annotations_versioned/Human_Gene_Symbol_with_Remapping_MSigDB.v", 
   msigdbversion, ".chip")), header = TRUE, stringsAsFactors = FALSE, sep = "\t", 
   quote = "", fill = TRUE)
-} else if (as.numeric(msigdbversion) < 7.2) {
+} else if (as.numeric(msigdbversion) == 7.1) {
  symbolchip <- read.table(url(paste0("https://data.broadinstitute.org/gsea-msigdb/msigdb/annotations_versioned/Human_Symbol_with_Remapping_MSigDB.v", 
   msigdbversion, ".chip")), header = TRUE, stringsAsFactors = FALSE, sep = "\t", 
   quote = "", fill = TRUE)
+} else if (as.numeric(msigdbversion) < 7.1) {
+ message(paste0("Error: MSigDB Version ", msigdbversion, " is not supported. Please try a newer version."))
+ stop()
 }
 symbolchip <- symbolchip[, -c(3)]
 
 symbol_mapped <- symbolchip[symbolchip$Probe.Set.ID == symbol_query, ][, c(2)]
 if (length(symbol_mapped) > 1) {
- message("More than one possible mapping was detected for selected gene in the TCGA Dataset")
+ message("Error: More than one possible mapping was detected for selected gene in the TCGA Dataset")
  print(symbol_mapped)
  stop()
 }
@@ -102,10 +106,10 @@ allnames <- names(mappeddata)
 
 sample_pos <- names(mappedcbioassay)[mappedcbioassay[mappedcbioassay$Gene.Symbol == 
  symbol_mapped, ] >= as.numeric(threshold_pos)]
-sample_pos <- sample_pos[sample_pos!="Gene.Symbol"]
+sample_pos <- sample_pos[sample_pos != "Gene.Symbol"]
 sample_neg <- names(mappedcbioassay)[mappedcbioassay[mappedcbioassay$Gene.Symbol == 
  symbol_mapped, ] <= as.numeric(threshold_neg)]
-sample_neg <- sample_neg[sample_neg!="Gene.Symbol"]
+sample_neg <- sample_neg[sample_neg != "Gene.Symbol"]
 
 
 matches_pos <- unique(grep(paste(sample_pos, collapse = "|"), allnames, value = TRUE))
