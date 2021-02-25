@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Default",
+        "description": "Basic Parameters.",
+        "hidden": false,
+        "parameters": [
+            "PROJ.gct",
+            "CLS"
+        ]
+    },
+    {
+        "name": "Advanced",
+        "description": "Advanced Parameters.",
+        "hidden": false,
+        "parameters": [
+            "Reverse",
+            "Plot.Top.Results"
+        ]
+    }
+]
