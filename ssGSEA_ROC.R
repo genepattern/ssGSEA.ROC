@@ -1,16 +1,30 @@
+suppressMessages(suppressWarnings(install.packages("getopt", repos = "https://cloud.r-project.org/", 
+ quiet = TRUE)))
+suppressMessages(suppressWarnings(install.packages("optparse", repos = "https://cloud.r-project.org/", 
+ quiet = TRUE)))
+suppressMessages(suppressWarnings(library("getopt")))
+suppressMessages(suppressWarnings(library("optparse")))
+
 suppressMessages(suppressWarnings(install.packages("ROCR", repos = "https://cloud.r-project.org/", quiet = TRUE)))
 suppressMessages(suppressWarnings(library("ROCR")))
 
 args = commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 8) {
- stop("Dataset and CLS must be specified", call. = FALSE)
-} else if (length(args) == 8) {
- ssmatrix = args[2]
- clsfile = args[4]
- reverse = as.logical(args[6])
- plotnsets = as.numeric(args[8])
-}
+option_list <- list(
+make_option("--ssmatrix", dest = "ssmatrix"),
+make_option("--clsfile", dest = "clsfile"),
+make_option("--reverse", dest = "reverse"),
+make_option("--plotnsets", dest = "plotnsets")
+)
+
+opt <- parse_args(OptionParser(option_list = option_list), positional_arguments = TRUE, 
+ args = arguments)$options
+
+ssmatrix = opt$ssmatrix
+clsfile = opt$clsfile
+reverse = as.logical(opt$reverse
+plotnsets = as.numeric(opt$plotnsets)
+
 set.seed(147)
 
 ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0, 
