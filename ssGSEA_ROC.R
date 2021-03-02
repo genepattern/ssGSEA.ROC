@@ -8,7 +8,7 @@ suppressMessages(suppressWarnings(library("optparse")))
 suppressMessages(suppressWarnings(install.packages("ROCR", repos = "https://cloud.r-project.org/", quiet = TRUE)))
 suppressMessages(suppressWarnings(library("ROCR")))
 
-args = commandArgs(trailingOnly = TRUE)
+arguments = commandArgs(trailingOnly = TRUE)
 
 option_list <- list(
 make_option("--ssmatrix", dest = "ssmatrix"),
