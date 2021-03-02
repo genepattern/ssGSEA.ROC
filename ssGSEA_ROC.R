@@ -22,7 +22,7 @@ opt <- parse_args(OptionParser(option_list = option_list), positional_arguments 
 
 ssmatrix = opt$ssmatrix
 clsfile = opt$clsfile
-reverse = as.logical(opt$reverse
+reverse = as.logical(opt$reverse)
 plotnsets = as.numeric(opt$plotnsets)
 
 set.seed(147)
