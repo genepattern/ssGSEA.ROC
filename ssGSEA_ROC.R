@@ -453,7 +453,7 @@ plotsets <- unique(c(head(dataset_calculations[, c(1)], plotnsets), tail(dataset
 
 direction = paste0(names(t)[1], "vs", names(t)[2])
 
-write.table(dataset_calculations, paste0(filenames, ".", direction, ".Results.txt"), 
+write.table(dataset_calculations, paste0(filenames, ".", direction, ".Results.tsv"), 
  quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
 
 
