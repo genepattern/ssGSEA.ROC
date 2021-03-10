@@ -41,7 +41,7 @@ p2_value=
 p3_MODE=
 p3_TYPE=TEXT
 p3_default_value=FALSE
-p3_description=Reverse direction of the projections. <br> By default (FALSE) ROCR will calculate AUCs for the first phenotype in the cls vs. the second phenotype. <br> Setting this flag to "TRUE" will calculate the second phenotype vs. the first phenotype.
+p3_description=Reverse direction of the projections. <br> By default (FALSE) ROCR will calculate statistics for the first phenotype in the cls vs. the second phenotype. <br> Setting this flag to "TRUE" will calculate the second phenotype vs. the first phenotype.
 p3_fileFormat=
 p3_flag=--reverse
 p3_name=Reverse
@@ -54,7 +54,7 @@ p3_value=FALSE\=FALSE;TRUE\=TRUE
 p4_MODE=
 p4_TYPE=Integer
 p4_default_value=20
-p4_description=Plot ROC curves for the top N AUCs.
+p4_description=Plot ROC curves for the top N gene sets in each direction.
 p4_fileFormat=
 p4_flag=--plotnsets
 p4_name=Plot.Top.Results
