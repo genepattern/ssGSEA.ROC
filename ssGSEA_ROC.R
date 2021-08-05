@@ -29,35 +29,35 @@ set.seed(147)
 
 ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0, 
  fraction = 1, replace = F, adjust.FDR.q.val = F) {
- 
+
  filenames <- basename(ssmatrix)
- 
+
  dataset <- read.table(ssmatrix, header = F, stringsAsFactors = FALSE, sep = "\t", 
   fill = TRUE, quote = "", na = NA)
  cls.cont <- readLines(clsfile)
- 
+
  dataset <- dataset[-c(1), ]
  colnames(dataset) <- dataset[c(1), ]
  dataset <- dataset[-c(1), ]
  rownames(dataset) <- dataset[, c(1)]
  dataset_descriptions <- as.data.frame(dataset[, c(1, 2)], stringsAsFactors = FALSE)
  dataset <- dataset[, -c(1, 2)]
- 
+
  num.lines <- length(cls.cont)
  cls.cont[[3]] <- gsub("\\t", " ", cls.cont[[3]])  #Converts any tabs to spaces
  class.list <- unlist(strsplit(cls.cont[[3]], " "))  #Splits CLS on spaces
- 
+
  cls.cont[[2]] <- gsub("\\t", " ", cls.cont[[2]])  #Converts any tabs to spaces
  class.ids <- unlist(strsplit(cls.cont[[2]], " "))  #Splits CLS on spaces
  class.ids <- class.ids[2:length(class.ids)]
  class.ids <- class.ids[class.ids != ""]
- 
+
  s <- length(class.list)
  t <- table(class.list)[c(unique(class.list))]
  l <- length(t)
- 
+
  sigfigs <- nchar(strsplit(as.character(1/nperm), "\\.")[[1]][2])
- 
+
  phen <- vector(length = l, mode = "character")
  phen.label <- vector(length = l, mode = "numeric")
  class.v <- vector(length = s, mode = "numeric")
@@ -72,7 +72,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
    }
   }
  }
- 
+
  if (reverse == FALSE) {
   class.labels <- class.v
  } else if (reverse == TRUE) {
@@ -81,15 +81,15 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   t <- rev(t)
   class.ids <- rev(class.ids)
  }
- 
- 
+
+
  names(t) <- class.ids
- 
+
  col.index <- order(class.labels, decreasing = F)
  class.labels <- class.labels[col.index]
- 
+
  class.labels = 1 - class.labels
- 
+
  dataset <- dataset[, c(col.index)]
  dataset_transposed <- as.data.frame(t(dataset), stringsAsFactors = FALSE)
  dataset_calculations <- as.data.frame(cbind(dataset_descriptions, AUC = as.numeric(""), 
@@ -106,7 +106,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   stringsAsFactors = FALSE))
  dataset_calculations <- as.data.frame(cbind(dataset_calculations, NPV = as.numeric(""), 
   stringsAsFactors = FALSE))
- 
+
  for (i in 1:length(colnames(dataset_transposed))) {
   pred <- prediction(as.numeric(dataset_transposed[, i]), as.integer(class.labels))
   perf <- performance(pred, "tpr", "fpr")
@@ -114,10 +114,11 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   auc_perf <- auc_perf@y.values[[1]]
   dataset_calculations[i, c("AUC")] <- auc_perf
   perf2 <- performance(pred, "mat")
-  if(all(is.finite(perf2@y.values[[1]]))) {
-  dataset_calculations[i, c("Matthews Correlation (MCC)")] <- as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))])
+  if (all(is.finite(perf2@y.values[[1]]))) {
+   dataset_calculations[i, c("Matthews Correlation (MCC)")] <- as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))])
   } else {
-  dataset_calculations[i, c("Matthews Correlation (MCC)")] <- paste0(unique(perf2@y.values[[1]]),collapse=";")
+   dataset_calculations[i, c("Matthews Correlation (MCC)")] <- paste0(unique(perf2@y.values[[1]]), 
+    collapse = ";")
   }
   if (dataset_calculations[i, c("Matthews Correlation (MCC)")] >= 0) {
    sensis <- performance(pred, measure = "sens")@y.values[[1]]
@@ -138,40 +139,40 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
  dataset_order <- order(as.numeric(dataset_calculations[, c("Matthews Correlation (MCC)")]), 
   decreasing = TRUE)
  dataset_calculations <- dataset_calculations[dataset_order, ]
- 
+
  rownames(dataset_calculations) <- 1:nrow(dataset_calculations)
- 
- 
- 
+
+
+
  # Permutations
- 
+
  if ((t[[1]] >= 7) & (t[[2]] >= 7)) {
-  
+
   N <- length(dataset[, 1])
   Ns <- length(dataset[1, ])
-  
+
   subset.mask <- matrix(0, nrow = Ns, ncol = nperm)
   reshuffled.class.labels1 <- matrix(0, nrow = Ns, ncol = nperm)
   reshuffled.class.labels2 <- matrix(0, nrow = Ns, ncol = nperm)
   class.labels1 <- matrix(0, nrow = Ns, ncol = nperm)
   class.labels2 <- matrix(0, nrow = Ns, ncol = nperm)
-  
+
   auc.phi.matrix <- matrix(0, nrow = N, ncol = nperm)
   mcc.phi.matrix <- matrix(0, nrow = N, ncol = nperm)
-  
+
   M1 <- matrix(0, nrow = N, ncol = nperm)
   M2 <- matrix(0, nrow = N, ncol = nperm)
   S1 <- matrix(0, nrow = N, ncol = nperm)
   S2 <- matrix(0, nrow = N, ncol = nperm)
-  
+
   gc()
-  
+
   C <- split(class.labels, class.labels)
   class1.size <- length(C[[1]])
   class2.size <- length(C[[2]])
   class1.index <- seq(1, class1.size, 1)
   class2.index <- seq(class1.size + 1, class1.size + class2.size, 1)
-  
+
   for (r in 1:nperm) {
    class1.subset <- sample(class1.index, size = ceiling(class1.size * fraction), 
     replace = replace)
@@ -194,7 +195,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
    subset.mask[, r] <- as.numeric(c(subset.class1, subset.class2))
    fraction.class1 <- class1.size/Ns
    fraction.class2 <- class2.size/Ns
-   
+
    if (permutation.type == 0) {
     # random (unbalanced) permutation
     full.subset <- c(class1.subset, class2.subset)
@@ -218,7 +219,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
     }
    } else if (permutation.type == 1) {
     # proportional (balanced) permutation
-    
+
     class1.label1.subset <- sample(class1.subset, size = ceiling(class1.subset.size * 
       fraction.class1))
     class2.label1.subset <- sample(class2.subset, size = floor(class2.subset.size * 
@@ -247,34 +248,38 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
    }
   }
   # message('Computing permutations 1-100 of ', nperm, '...')
-  
+
   for (d in 1:nperm) {
    if ((d == 101) || (d == 201) || (d == 301) || (d == 401) || (d == 501) || 
     (d == 601) || (d == 701) || (d == 801) || (d == 901)) {
     # message('Computing permutations ', d, '-', d + 99, ' of ', nperm, '...')
    }
-   
+
    reshuffled.class.labels1 = (1 - reshuffled.class.labels1)
-   
+
    for (i in 1:length(colnames(dataset_transposed))) {
     pred <- prediction(as.numeric(dataset_transposed[, i]), as.integer(reshuffled.class.labels1[, 
       d]))
     auc_perf <- performance(pred, measure = "auc")
     auc.phi.matrix[i, d] <- as.numeric(auc_perf@y.values[[1]])
     mcc_perf <- performance(pred, "mat")
-    mcc.phi.matrix[i, d] <- as.numeric(mcc_perf@y.values[[1]][which.max(abs(mcc_perf@y.values[[1]]))])
-    
+    if (all(is.finite(mcc_perf@y.values[[1]]))) {
+      mcc.phi.matrix[i, d] <- as.numeric(mcc_perf@y.values[[1]][which.max(abs(mcc_perf@y.values[[1]]))])
+    } else {
+      mcc.phi.matrix[i, d] <- paste0(unique(mcc_perf@y.values[[1]]), 
+     collapse = ";")
+    }
    }
    auc.phi.matrix <- auc.phi.matrix[dataset_order, ]
    mcc.phi.matrix <- mcc.phi.matrix[dataset_order, ]
-   
+
   }
-  
+
   auc.p.vals <- matrix(0, nrow = N, ncol = 2)
   mcc.p.vals <- matrix(0, nrow = N, ncol = 2)
-  
+
   # message('Computing pValues from AUC null distribution...')
-  
+
   for (i in 1:N) {
    pos.phi <- NULL
    neg.phi <- NULL
@@ -294,9 +299,9 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
       digits = sigfigs), nsmall = sigfigs)
    }
   }
-  
+
   # message('Computing pValues from MCC null distribution...')
-  
+
   for (i in 1:N) {
    pos.phi <- NULL
    neg.phi <- NULL
@@ -316,16 +321,16 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
       digits = sigfigs), nsmall = sigfigs)
    }
   }
-  
-  
+
+
   dataset_calculations <- cbind(dataset_calculations, `AUC NOM pValue` = format(auc.p.vals[, 
    1], nsmall = sigfigs))
   dataset_calculations <- cbind(dataset_calculations, `MCC NOM pValue` = format(mcc.p.vals[, 
    1], nsmall = sigfigs))
-  
+
   # message('Computing FDR q-values from MCC distributions...')
   Ng <- dim(dataset_calculations)[1]
-  
+
   NES <- vector(length = Ng, mode = "numeric")
   phi.norm.mean <- vector(length = Ng, mode = "numeric")
   obs.phi.norm.mean <- vector(length = Ng, mode = "numeric")
@@ -337,13 +342,13 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   FDR.median <- vector(length = Ng, mode = "numeric")
   # phi.norm.median.d <- vector(length = Ng, mode = 'numeric')
   # obs.phi.norm.median.d <- vector(length = Ng, mode = 'numeric')
-  
+
   # Obs.ES.index <- dataset_calculations[, c('AUC')] Orig.index <- seq(1, Ng)
   # Orig.index <- Orig.index[Obs.ES.index] Orig.index <- order(Orig.index,
   # decreasing = F) Obs.ES.norm.sorted <- Obs.ES.norm[Obs.ES.index]
   # Obs.ES.norm.sorted <- dataset_calculations[, c('AUC')] #AUC gs.names.sorted <-
   # gs.names[Obs.ES.index]
-  
+
   for (k in 1:Ng) {
    # NES[k] <- Obs.ES.norm.sorted[k]
    NES[k] <- as.numeric(dataset_calculations[, c("Matthews Correlation (MCC)")][k])
@@ -380,9 +385,9 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
    FDR.median[k] <- ifelse(phi.norm.median[k]/obs.phi.norm.median[k] < 1, 
     phi.norm.median[k]/obs.phi.norm.median[k], 1)
   }
-  
+
   # adjust q-values
-  
+
   if (adjust.FDR.q.val == T) {
    pos.nes <- length(NES[NES >= 0])
    min.FDR.mean <- FDR.mean[pos.nes]
@@ -395,7 +400,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
       FDR.mean[k] <- min.FDR.mean
     }
    }
-   
+
    neg.nes <- pos.nes + 1
    min.FDR.mean <- FDR.mean[neg.nes]
    min.FDR.median <- FDR.median[neg.nes]
@@ -408,15 +413,15 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
     }
    }
   }
-  
+
   FDR.mean <- signif(FDR.mean, digits = 5)
   FDR.median <- signif(FDR.median, digits = 5)
-  
+
   dataset_calculations <- cbind(dataset_calculations, `MCC FDR` = FDR.mean)
   # dataset_calculations <- cbind(dataset_calculations, `MCC FDR (Median)` =
   # FDR.median)
  }
- 
+
  dataset_calculations <- as.data.frame(cbind(dataset_calculations, `ssGSEA Score Wilcox pValue` = "", 
   stringsAsFactors = FALSE))
  for (i in 1:dim(dataset_calculations)[1]) {
@@ -424,7 +429,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
    dataset_calculations[i, 1]]), as.numeric(dataset_transposed[eval(1 + 
    t[1]):eval(t[1] + t[2]), dataset_calculations[i, 1]]))[3])
  }
- 
+
  return(list(filenames = filenames, auc = dataset_calculations, dataset = dataset_transposed, 
   sigfigs = sigfigs, class.labels = class.labels, t = t))
 }
@@ -463,7 +468,7 @@ write.table(dataset_calculations, paste0(filenames, ".", direction, ".Results.ts
 
 pdf(file = paste0(filenames, ".", direction, ".Plots.pdf"), width = 14)
 for (i in 1:length(plotsets)) {
- 
+
  if ((as.numeric(dataset_calculations[dataset_calculations[c(1)] == plotsets[i], 
   c("AUC")]) >= 0.5) && (as.numeric(dataset_calculations[dataset_calculations[c(1)] == 
   plotsets[i], c("Matthews Correlation (MCC)")]) >= 0)) {
@@ -495,7 +500,7 @@ for (i in 1:length(plotsets)) {
   plotsets[i], c("Sensitivity")]), col = "slategrey", labels = paste0("cutoff value (Youden Index): ", 
   round(as.numeric(dataset_calculations[dataset_calculations[c(1)] == plotsets[i], 
    c("cutoff value (Youden Index)")]), 5)), adj = adjloc, cex = 0.8)
- 
+
  legend(legendloc, c(paste0("AUC: ", format(round(as.numeric(dataset_calculations[dataset_calculations[c(1)] == 
   plotsets[i], c("AUC")]), 5), nsmall = 5)), paste0("MCC: ", format(round(as.numeric(dataset_calculations[dataset_calculations[c(1)] == 
   plotsets[i], c("Matthews Correlation (MCC)")]), 5), nsmall = 5))), bty = "n", 
