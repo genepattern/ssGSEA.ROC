@@ -108,7 +108,7 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   auc_perf <- auc_perf@y.values[[1]]
   dataset_calculations[i, c("AUC")] <- auc_perf
   perf2 <- performance(pred, "mat")
-  if (all(is.nan(perf2@y.values[[1]]))) {
+  if (!all(is.nan(perf2@y.values[[1]]))) {
    dataset_calculations[, c("Matthews Correlation (MCC)")] <- as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))])
   } else {
    dataset_calculations[i, c("Matthews Correlation (MCC)")] <- NaN
