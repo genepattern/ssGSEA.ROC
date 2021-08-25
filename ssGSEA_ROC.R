@@ -1,11 +1,5 @@
-suppressMessages(suppressWarnings(install.packages("getopt", repos = "https://cloud.r-project.org/", 
- quiet = TRUE)))
-suppressMessages(suppressWarnings(install.packages("optparse", repos = "https://cloud.r-project.org/", 
- quiet = TRUE)))
 suppressMessages(suppressWarnings(library("getopt")))
 suppressMessages(suppressWarnings(library("optparse")))
-
-suppressMessages(suppressWarnings(install.packages("ROCR", repos = "https://cloud.r-project.org/", quiet = TRUE)))
 suppressMessages(suppressWarnings(library("ROCR")))
 
 arguments = commandArgs(trailingOnly = TRUE)
