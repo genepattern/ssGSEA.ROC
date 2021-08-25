@@ -4,12 +4,9 @@ suppressMessages(suppressWarnings(library("ROCR")))
 
 arguments = commandArgs(trailingOnly = TRUE)
 
-option_list <- list(
-make_option("--ssmatrix", dest = "ssmatrix"),
-make_option("--clsfile", dest = "clsfile"),
-make_option("--reverse", dest = "reverse"),
-make_option("--plotnsets", dest = "plotnsets")
-)
+option_list <- list(make_option("--ssmatrix", dest = "ssmatrix"), make_option("--clsfile", 
+ dest = "clsfile"), make_option("--reverse", dest = "reverse"), make_option("--plotnsets", 
+ dest = "plotnsets"))
 
 opt <- parse_args(OptionParser(option_list = option_list), positional_arguments = TRUE, 
  args = arguments)$options
@@ -108,17 +105,18 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
   auc_perf <- auc_perf@y.values[[1]]
   dataset_calculations[i, c("AUC")] <- auc_perf
   perf2 <- performance(pred, "mat")
-  if (!all(is.finite(perf2@y.values[[1]]))) {
-   dataset_calculations[, c("Matthews Correlation (MCC)")] <- as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))])
+  dataset_calculations[i, c("Matthews Correlation (MCC)")] <- as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))])
+  if (!is.na(dataset_calculations[i, c("Matthews Correlation (MCC)")])) {
+   if (dataset_calculations[i, c("Matthews Correlation (MCC)")] >= 0) {
+    sensis <- performance(pred, measure = "sens")@y.values[[1]]
+    specis <- performance(pred, measure = "spec")@y.values[[1]]
+   } else {
+    sensis <- -performance(pred, measure = "sens")@y.values[[1]]
+    specis <- -performance(pred, measure = "spec")@y.values[[1]]
+   }
   } else {
-   dataset_calculations[i, c("Matthews Correlation (MCC)")] <- unique(as.numeric(perf2@y.values[[1]][which.max(abs(perf2@y.values[[1]]))]))
-  }
-  if (dataset_calculations[i, c("Matthews Correlation (MCC)")] >= 0) {
    sensis <- performance(pred, measure = "sens")@y.values[[1]]
    specis <- performance(pred, measure = "spec")@y.values[[1]]
-  } else {
-   sensis <- -performance(pred, measure = "sens")@y.values[[1]]
-   specis <- -performance(pred, measure = "spec")@y.values[[1]]
   }
   summing <- sensis + specis
   youden_ind <- which.max(summing)
