@@ -304,12 +304,16 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
     }
    }
    ES.value <- dataset_calculations[i, c("Matthews Correlation (MCC)")]
-   if (ES.value >= 0) {
-    mcc.p.vals[i, 1] <- format(round(signif(sum(pos.phi >= ES.value)/length(pos.phi)), 
-      digits = sigfigs), nsmall = sigfigs)
+   if (!is.na(ES.value)) {
+    if (ES.value >= 0) {
+      mcc.p.vals[i, 1] <- format(round(signif(sum(pos.phi >= ES.value)/length(pos.phi)), 
+     digits = sigfigs), nsmall = sigfigs)
+    } else {
+      mcc.p.vals[i, 1] <- format(round(signif(sum(neg.phi <= ES.value)/length(neg.phi)), 
+     digits = sigfigs), nsmall = sigfigs)
+    }
    } else {
-    mcc.p.vals[i, 1] <- format(round(signif(sum(neg.phi <= ES.value)/length(neg.phi)), 
-      digits = sigfigs), nsmall = sigfigs)
+    mcc.p.vals[i, 1] <- NA
    }
   }
 
@@ -351,20 +355,27 @@ ssauc <- function(ssmatrix, clsfile, reverse, nperm = 1000, permutation.type = 0
     phi.vec <- mcc.phi.matrix[, i]
     # obs.phi.vec <- obs.phi.norm[, i]
     obs.phi.vec <- as.numeric(dataset_calculations[, c("Matthews Correlation (MCC)")])
-    if (ES.value >= 0) {
-      count.col.norm <- sum(phi.vec >= 0)
-      obs.count.col.norm <- sum(obs.phi.vec >= 0)
-      count.col[i] <- ifelse(count.col.norm > 0, sum(phi.vec >= ES.value)/count.col.norm, 
-     0)
-      obs.count.col[i] <- ifelse(obs.count.col.norm > 0, sum(obs.phi.vec >= 
-     ES.value)/obs.count.col.norm, 0)
+    if (!is.na(ES.value)) {
+      if (ES.value >= 0) {
+     count.col.norm <- sum(phi.vec >= 0)
+     obs.count.col.norm <- sum(obs.phi.vec >= 0)
+     count.col[i] <- ifelse(count.col.norm > 0, sum(phi.vec >= ES.value)/count.col.norm, 
+       0)
+     obs.count.col[i] <- ifelse(obs.count.col.norm > 0, sum(obs.phi.vec >= 
+       ES.value)/obs.count.col.norm, 0)
+      } else {
+     count.col.norm <- sum(phi.vec < 0)
+     obs.count.col.norm <- sum(obs.phi.vec < 0)
+     count.col[i] <- ifelse(count.col.norm > 0, sum(phi.vec <= ES.value)/count.col.norm, 
+       0)
+     obs.count.col[i] <- ifelse(obs.count.col.norm > 0, sum(obs.phi.vec <= 
+       ES.value)/obs.count.col.norm, 0)
+      }
     } else {
-      count.col.norm <- sum(phi.vec < 0)
-      obs.count.col.norm <- sum(obs.phi.vec < 0)
-      count.col[i] <- ifelse(count.col.norm > 0, sum(phi.vec <= ES.value)/count.col.norm, 
-     0)
-      obs.count.col[i] <- ifelse(obs.count.col.norm > 0, sum(obs.phi.vec <= 
-     ES.value)/obs.count.col.norm, 0)
+     count.col.norm <- NA
+     obs.count.col.norm <- NA
+     count.col[i] <- NA
+     obs.count.col[i] <- NA
     }
    }
    phi.norm.mean[k] <- mean(count.col)
